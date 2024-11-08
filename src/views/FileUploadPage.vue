@@ -136,7 +136,8 @@
   <script setup>
   import { ref } from 'vue'
   import { ArrowLeftIcon, UploadIcon } from 'lucide-vue-next'
-  
+  import { useRouter } from 'vue-router'; // Importar useRouter
+
   const currentView = ref('main')
   const ineFrontFile = ref(null)
   const ineBackFile = ref(null)
@@ -144,7 +145,8 @@
   const ineFrontInput = ref(null)
   const ineBackInput = ref(null)
   const passportInput = ref(null)
-  
+  const router = useRouter(); // Definir router usando useRouter
+
   const ineFrontPreview = ref('')
   const ineBackPreview = ref('')
   const passportPreview = ref('')
@@ -198,30 +200,38 @@
     }
     reader.readAsDataURL(file)
   }
-  
   const uploadINE = async () => {
-  if (!ineFrontFile.value || !ineBackFile.value) return
+  if (!ineFrontFile.value || !ineBackFile.value) return;
 
-  const formData = new FormData()
-  formData.append('ineFront', ineFrontFile.value)
-  formData.append('ineBack', ineBackFile.value)
+  const formData = new FormData();
+  formData.append('ineFront', ineFrontFile.value);
+  formData.append('ineBack', ineBackFile.value);
 
   try {
     const response = await fetch('https://127.0.0.1:443/process_and_validate_ine', {
       method: 'POST',
       body: formData,
-    })
+      mode: 'cors', // Agrega el modo CORS
+    });
 
     if (!response.ok) {
-      throw new Error('Error al subir los archivos de INE')
+      throw new Error('Error al subir los archivos de INE');
     }
 
-    const result = await response.json()
-    console.log('Archivos de INE subidos exitosamente:', result)
+    const result = await response.json();
+    console.log('Archivos de INE subidos exitosamente:', result);
+
+    // Redirigir a otra ruta con parámetros de ruta
+    router.push({
+      name: 'VerificacionBiometrica', // Nombre de la ruta a la que deseas redirigir
+      params: {
+        path: result.path, // Ejemplo de parámetro de ruta
+      }
+    });
   } catch (error) {
-    console.error('Error al subir los archivos de INE:', error)
+    console.error('Error al subir los archivos de INE:', error);
   }
-}
+};
   
   const uploadPassport = async () => {
   if (!passportFile.value) return

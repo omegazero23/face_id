@@ -28,7 +28,8 @@
   import { FaceMesh, FACEMESH_TESSELATION, FACEMESH_RIGHT_EYE, FACEMESH_RIGHT_EYEBROW, FACEMESH_RIGHT_IRIS, FACEMESH_LEFT_EYE, FACEMESH_LEFT_EYEBROW, FACEMESH_LEFT_IRIS, FACEMESH_FACE_OVAL, FACEMESH_LIPS } from '@mediapipe/face_mesh';
   import { drawConnectors } from '@mediapipe/drawing_utils';
   import Swal from 'sweetalert2';
-  
+  import { useRoute } from 'vue-router';
+
   const outputCanvas = ref(null);
   const capturedImageContainer = ref(null);
   const message = ref('Ajusta tu posición para centrar tu rostro.');
@@ -36,7 +37,8 @@
   const isCapturing = ref(false);
   const lastImageData = ref(null);
   const ineFile = ref('');
-  
+  const route = useRoute(); // Usar useRoute para obtener el parámetro de ruta
+
   let videoElement, canvasCtx, faceMesh, camera;
   
   onMounted(() => {
@@ -268,21 +270,24 @@
       originalCanvas.toBlob(async (blob) => {
         const formData = new FormData();
         formData.append('person_image', blob, 'image.jpg');
-        formData.append('ine_face_path', ineFile.value);
-  
+        // formData.append('ine_face_path', ineFile.value);
+
+        const pathParam = route.params.path;
+        formData.append('path_img', pathParam);
         const imgURL = URL.createObjectURL(blob);
         const imgElement = document.createElement('img');
         imgElement.src = imgURL;
         imgElement.alt = 'Imagen Capturada';
         imgElement.style.maxWidth = '100%';
         capturedImageContainer.value.appendChild(imgElement);
-  
+        for (let [key, value] of formData.entries()) {
+      console.log(`${key}: ${value}`);
+    }
         try {
-          const response = await fetch('/upload_face', {
+          const response = await fetch('https://127.0.0.1:443/ValidateIdenty', {
             method: 'POST',
             body: formData,
           });
-  
           const data = await response.json();
           if (response.status >= 400) {
             Swal.fire({
@@ -315,6 +320,7 @@
             confirmButtonText: 'Aceptar'
           }).then(() => {
             location.reload();
+            
           });
           message.value = "Error al enviar la imagen.";
           console.error(error);
@@ -329,12 +335,17 @@
   <style scoped>
   .container {
     display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh;
-    padding: 1rem;
-    background-color: #f0f0f0;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 1rem;
+  background-color: #f0f0f0;
+  width: 100%; /* Asegura que el contenedor ocupe todo el ancho */
+  max-width: 100%; /* Evita que el contenedor exceda el ancho de la ventana */
+  box-sizing: border-box; /* Incluye padding en el cálculo del ancho */
+  margin: 0; /* Elimina cualquier margen */
+  overflow-x: hidden;
   }
   
   .logo {

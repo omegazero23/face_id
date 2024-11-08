@@ -1,14 +1,19 @@
 const { defineConfig } = require('@vue/cli-service')
 
-module.exports = defineConfig({
-  transpileDependencies: true,
+module.exports = {
   devServer: {
+    https: true,  // Activa HTTPS en el servidor de desarrollo de Vue
     proxy: {
-      '/process_and_validate_ine': {
-        target: 'https://127.0.0.1:443',
+      '/api': {
+        target: 'https://127.0.0.1',  // Ajusta a tu backend en Docker
         changeOrigin: true,
-        secure: false,
+        secure: false,  // Esto es útil para certificados auto-firmados
+      },
+      '/login': {
+        target: 'https://127.0.0.1',  // Ajusta a tu backend en Docker
+        changeOrigin: true,
+        secure: false,  // Esto es útil para certificados auto-firmados
       },
     },
   },
-})
+};
