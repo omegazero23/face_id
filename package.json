@@ -13,6 +13,7 @@
     "@mediapipe/face_mesh": "^0.4.1633559619",
     "axios": "^1.7.7",
     "core-js": "^3.8.3",
+    "dotenv": "^16.4.5",
     "js-cookie": "^3.0.5",
     "jwt-decode": "^4.0.0",
     "lucide-vue-next": "^0.454.0",
