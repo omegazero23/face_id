@@ -307,7 +307,12 @@
               confirmButtonText: 'Aceptar'
             }).then((result) => {
               if (result.isConfirmed) {
-                window.location.href = '/pruebaDeVida';
+                const filePath = encodeURIComponent(data.filePath); // Asegúrate de que `data.filePath` contenga la ruta del archivo
+
+                const jwt = encodeURIComponent(localStorage.getItem('jwtToken'));
+                console.log(jwt);
+
+                window.location.href = `/verify_liveness/${filePath}`;
               }
             });
             message.value = data.message;

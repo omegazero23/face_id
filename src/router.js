@@ -5,7 +5,7 @@ import FileUploadPage from './views/FileUploadPage.vue';
 import LoginPage from './views/LoginPage.vue';
 import ErrorPage from './views/ErrorPage.vue';
 import BiometricVerifications from './views/BiometricVerifications.vue'; // Asegúrate de que la ruta de importación es correcta
-
+import verify_liveness from './views/verify_liveness.vue'; // Asegúrate de que la ruta de importación es correcta
 const routes = [
   {
     path: '/',
@@ -26,6 +26,11 @@ const routes = [
     path: '/verificacion-biometrica/:path',
     name: 'VerificacionBiometrica',
     component: BiometricVerifications,
+  },
+  {
+    path: '/verify_liveness/:filePath',
+    name: 'verify_liveness',
+    component: verify_liveness,
   }
 ];
 
