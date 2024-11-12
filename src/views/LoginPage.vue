@@ -50,8 +50,12 @@
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { LockIcon, XCircleIcon } from 'lucide-vue-next';
+import Cookie from 'js-cookie';
+
+
 
 export default {
+
   name: 'RegisterPage',
 
   components: {
@@ -64,38 +68,37 @@ export default {
     const loading = ref(true);
     const error = ref(null);
 
-    const validateToken = async (token) => {
-
+    const validateToken = async (token, latitude, longitude) => {
       try {
+        console.log(process.env.VUE_APP_LOGIN);
 
         const response = await fetch(
           `${process.env.VUE_APP_LOGIN}${token}`,
           {
-            method: 'GET',
+            method: 'POST',
             credentials: 'include',
             headers: {
               'Content-Type': 'application/json'
-            }
+            },
+            body: JSON.stringify({ latitude, longitude }),
+            mode: 'cors'
           }
         );
         console.log('Status:', response.status);
         console.log('Headers:', Object.fromEntries(response.headers));
         const data = await response.json();
 
-
-
         console.log('Datos recibidos:', data);
         console.log('Status:', data.status);
         console.log(data.status === 'success');
-        
 
         // Si la validación es exitosa, redirigir a la página principal
-        if (data.status === 'success') {
+        if (data.valid === true) {
           console.log('111111:');
-
+          const expirationdate = new Date(new Date().getTime() + 60 * 60 * 1000);
+          Cookie.set('token', token, { expires: expirationdate });
           router.push('/');
           console.log('222222:');
-
         } else {
           throw new Error('Error validando el token');
         }
@@ -111,7 +114,22 @@ export default {
       loading.value = true;
       error.value = null;
       const token = router.currentRoute.value.params.jwt;
-      validateToken(token);
+      getCoordinatesAndValidateToken(token);
+    };
+
+    const getCoordinatesAndValidateToken = (token) => {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const latitude = position.coords.latitude;
+          const longitude = position.coords.longitude;
+          validateToken(token, latitude, longitude);
+        },
+        (error) => {
+          console.error('Error al obtener las coordenadas:', error);
+          error.value = 'No se pudo obtener tu ubicación. Por favor, intenta nuevamente.';
+          loading.value = false;
+        }
+      );
     };
 
     onMounted(() => {
@@ -121,7 +139,7 @@ export default {
         loading.value = false;
         return;
       }
-      validateToken(token);
+      getCoordinatesAndValidateToken(token);
     });
 
     return {

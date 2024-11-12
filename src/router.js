@@ -28,7 +28,7 @@ const routes = [
     path: '/verificacion-biometrica/:path',
     name: 'VerificacionBiometrica',
     component: BiometricVerifications,
-    meta: { requiresAuth: true }
+
   },
   {
     path: '/verify_liveness/:filePath',

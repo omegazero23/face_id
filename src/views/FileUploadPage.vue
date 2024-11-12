@@ -137,6 +137,7 @@
   import { ref } from 'vue'
   import { ArrowLeftIcon, UploadIcon } from 'lucide-vue-next'
   import { useRouter } from 'vue-router'; // Importar useRouter
+  import Cookie from 'js-cookie';
 
   const currentView = ref('main')
   const ineFrontFile = ref(null)
@@ -206,12 +207,17 @@
   const formData = new FormData();
   formData.append('ineFront', ineFrontFile.value);
   formData.append('ineBack', ineBackFile.value);
-
+  const token = Cookie.get('token'); // Obtener el token de la cookie
+  console.log('Token:', token);
+  
   try {
-    const response = await fetch('https://127.0.0.1:443/process_and_validate_ine', {
+    const response = await fetch(process.env.VUE_APP_INE, {
       method: 'POST',
       body: formData,
       mode: 'cors', // Agrega el modo CORS
+      headers: {
+        'Authorization': `Bearer ${token}`, // Agregar el token de autorización
+      },
     });
 
     if (!response.ok) {
