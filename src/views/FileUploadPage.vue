@@ -207,37 +207,54 @@
   const formData = new FormData();
   formData.append('ineFront', ineFrontFile.value);
   formData.append('ineBack', ineBackFile.value);
-  const token = Cookie.get('token'); // Obtener el token de la cookie
+  
+  // Obtener el token desde la cookie
+  const token = Cookie.get('token'); 
   console.log('Token:', token);
   
   try {
-    const response = await fetch(process.env.VUE_APP_INE, {
-      method: 'POST',
-      body: formData,
-      mode: 'cors', // Agrega el modo CORS
-      headers: {
-        'Authorization': `Bearer ${token}`, // Agregar el token de autorización
-      },
-    });
+    // Obtener coordenadas de geolocalización
+    navigator.geolocation.getCurrentPosition(async (position) => {
+      const latitude = position.coords.latitude;
+      const longitude = position.coords.longitude;
 
-    if (!response.ok) {
-      throw new Error('Error al subir los archivos de INE');
-    }
+      // Añadir coordenadas al FormData
+      formData.append('latitude', latitude);
+      formData.append('longitude', longitude);
+      console.log('Coordenadas:', latitude, longitude);
+      
+      // Hacer la petición
+      const response = await fetch(process.env.VUE_APP_INE, {
+        method: 'POST',
+        body: formData,
+        mode: 'cors', // Permite CORS
+        headers: {
+          'Authorization': `Bearer ${token}`, // Incluir el token de autorización
+        },
+      });
 
-    const result = await response.json();
-    console.log('Archivos de INE subidos exitosamente:', result);
-
-    // Redirigir a otra ruta con parámetros de ruta
-    router.push({
-      name: 'VerificacionBiometrica', // Nombre de la ruta a la que deseas redirigir
-      params: {
-        path: result.path, // Ejemplo de parámetro de ruta
+      if (!response.ok) {
+        throw new Error('Error al subir los archivos de INE');
       }
+
+      const result = await response.json();
+      console.log('Archivos de INE subidos exitosamente:', result);
+
+      // Redirigir a otra ruta con parámetros de ruta
+      router.push({
+        name: 'VerificacionBiometrica', // Nombre de la ruta de redirección
+        params: {
+          path: result.path, // Parámetro de ruta de ejemplo
+        }
+      });
+    }, 
+    (error) => {
+      console.error("Error al obtener las coordenadas:", error);
     });
   } catch (error) {
     console.error('Error al subir los archivos de INE:', error);
   }
-};
+};      
   
   const uploadPassport = async () => {
   if (!passportFile.value) return

@@ -6,13 +6,13 @@ import LoginPage from './views/LoginPage.vue';
 import ErrorPage from './views/ErrorPage.vue';
 import BiometricVerifications from './views/BiometricVerifications.vue';
 import verify_liveness from './views/verify_liveness.vue';
-
+import SuccessProcess from './views/SuccessProcess.vue';
 const routes = [
   {
     path: '/',
     name: 'FileUploadPage',
     component: FileUploadPage,
-    // meta: { requiresAuth: true }
+    meta: { requiresAuth: true }
   },
   {
     path: '/register/:jwt',
@@ -31,11 +31,17 @@ const routes = [
 
   },
   {
-    path: '/verify_liveness/:filePath',
+    path: '/verify_liveness/:path',
     name: 'verify_liveness',
     component: verify_liveness,
     meta: { requiresAuth: true }
   },
+  {
+    path: '/success',
+    name: 'SuccessProcess',
+    component: SuccessProcess,
+    
+  }
 ];
 
 const router = createRouter({
@@ -54,7 +60,7 @@ const isTokenValid = (token) => {
 };
 
 router.beforeEach((to, from, next) => {
-  const token = Cookies.get('jwt');
+  const token = Cookies.get('token');
 
   // Si la ruta requiere autenticación
   if (to.matched.some(record => record.meta.requiresAuth)) {

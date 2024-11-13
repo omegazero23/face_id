@@ -32,6 +32,8 @@ import { FaceMesh } from '@mediapipe/face_mesh';
 import { drawConnectors } from '@mediapipe/drawing_utils';
 import { FACEMESH_TESSELATION } from '@mediapipe/face_mesh';
 import Swal from 'sweetalert2';
+import Cookie from 'js-cookie';
+import { useRoute } from 'vue-router';
 
 // mounted() {
 //     const urlParams = new URLSearchParams(window.location.search);
@@ -44,6 +46,7 @@ import Swal from 'sweetalert2';
 
 
 
+const token = Cookie.get('token'); 
 
 const inputVideo = ref(null);
 const outputCanvas = ref(null);
@@ -52,6 +55,7 @@ const showTimer = ref(false);
 const timeLeft = ref(20);
 const progress = ref(0);
 const isRecording = ref(false);
+const route = useRoute(); // Usar useRoute para obtener el parámetro de ruta
 
 let mediaRecorder;
 let recordedChunks = [];
@@ -64,7 +68,7 @@ let stepsCompleted = {
 };
 let timerInterval;
 let lastStepTime = 0;
-const MIN_TIME_BETWEEN_STEPS = 3000;
+const MIN_TIME_BETWEEN_STEPS = 2250;
 
 const randomPhrases = [
   "El sol brilla en el cielo azul",
@@ -240,12 +244,26 @@ async function setupFaceMesh() {
 }
 
 function sendVideoToServer(blob) {
+
   const formData = new FormData();
+  const pathParam = route.params.path;
   formData.append("video", blob, "video_verificacion.webm");
+  formData.append('image_path', pathParam);
+  formData.append("frase_esperada", currentPhrase);
+
+
+
+  for (let [key, value] of formData.entries()) {
+          console.log(`${key}: ${value}`);
+        }
+
   
   fetch("https://localhost:443/verify-liveness", {
     method: "POST",
-    body: formData
+    body: formData,
+    headers: {
+              'Authorization': `Bearer ${token}`,
+            },
   })
   .then(response => response.json())
   .then(data => {
