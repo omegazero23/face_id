@@ -40,7 +40,11 @@ const router = useRouter();
 
 let videoElement, canvasCtx, faceMesh, camera;
 
-onMounted(() => {
+onMounted(async() => {
+  
+  const stage = await fetch()
+
+  
   videoElement = document.getElementById('input-video');
   canvasCtx = outputCanvas.value.getContext('2d');
 
