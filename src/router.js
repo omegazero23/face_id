@@ -22,16 +22,19 @@ const routes = [
   {
     path: '/error',
     name: 'Error',
-    component: ErrorPage
-  },
-  {
-    path: '/verificacion-biometrica/:path',
-    name: 'VerificacionBiometrica',
-    component: BiometricVerifications,
+    component: ErrorPage,
+    meta: { requiresAuth: true }
 
   },
   {
-    path: '/verify_liveness/:path',
+    path: '/verificacion-biometrica',
+    name: 'VerificacionBiometrica',
+    component: BiometricVerifications,
+    meta: { requiresAuth: true }
+
+  },
+  {
+    path: '/verify_liveness',
     name: 'verify_liveness',
     component: verify_liveness,
     meta: { requiresAuth: true }

@@ -23,8 +23,9 @@ import { Camera } from '@mediapipe/camera_utils';
 import { FaceMesh, FACEMESH_TESSELATION, FACEMESH_RIGHT_EYE, FACEMESH_RIGHT_EYEBROW, FACEMESH_RIGHT_IRIS, FACEMESH_LEFT_EYE, FACEMESH_LEFT_EYEBROW, FACEMESH_LEFT_IRIS, FACEMESH_FACE_OVAL, FACEMESH_LIPS } from '@mediapipe/face_mesh';
 import { drawConnectors } from '@mediapipe/drawing_utils';
 import Swal from 'sweetalert2';
-import { useRoute } from 'vue-router';
+//import { useRoute } from 'vue-router';
 import Cookie from 'js-cookie';
+import { useRouter } from 'vue-router';
 
 const outputCanvas = ref(null);
 const capturedImageContainer = ref(null);
@@ -33,7 +34,9 @@ const criteriaMet = ref(false);
 const isCapturing = ref(false);
 const lastImageData = ref(null);
 const ineFile = ref('');
-const route = useRoute(); // Usar useRoute para obtener el parámetro de ruta
+const router = useRouter();
+
+//const route = useRoute(); // Usar useRoute para obtener el parámetro de ruta
 
 let videoElement, canvasCtx, faceMesh, camera;
 
@@ -271,8 +274,8 @@ async function captureImage() {
         formData.append('person_image', blob, 'image.jpg');
         formData.append('latitude', latitude); // Añadir latitud al formulario
         formData.append('longitude', longitude); // Añadir longitud al formulario
-        const pathParam = route.params.path;
-        formData.append('path_img', pathParam);
+        //const pathParam = route.params.path;
+        //formData.append('path_img', );
         const imgURL = URL.createObjectURL(blob);
         const imgElement = document.createElement('img');
         imgElement.src = imgURL;
@@ -315,12 +318,12 @@ async function captureImage() {
               confirmButtonText: 'Aceptar'
             }).then((result) => {
               if (result.isConfirmed) {
-                const filePath = encodeURIComponent(data.filePath);
+                // const filePath = encodeURIComponent(data.filePath);
 
-                const jwt = encodeURIComponent(localStorage.getItem('jwtToken'));
-                console.log(jwt);
+                // const jwt = encodeURIComponent(localStorage.getItem('jwtToken'));
+                // console.log(jwt);
 
-                window.location.href = `/verify_liveness/${filePath}`;
+                router.push('/verify_liveness');
               }
             });
             message.value = data.message;

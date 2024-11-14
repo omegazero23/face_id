@@ -243,9 +243,9 @@
       // Redirigir a otra ruta con parámetros de ruta
       router.push({
         name: 'VerificacionBiometrica', // Nombre de la ruta de redirección
-        params: {
-          path: result.path, // Parámetro de ruta de ejemplo
-        }
+        // params: {
+        //   path: result.path, // Parámetro de ruta de ejemplo
+        // }
       });
     }, 
     (error) => {
