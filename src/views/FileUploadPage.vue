@@ -134,10 +134,11 @@
   </template>
   
   <script setup>
-  import { ref } from 'vue'
+  import { ref, onMounted } from 'vue'
   import { ArrowLeftIcon, UploadIcon } from 'lucide-vue-next'
   import { useRouter } from 'vue-router'; // Importar useRouter
   import Cookie from 'js-cookie';
+  import Swal from 'sweetalert2';
 
   const currentView = ref('main')
   const ineFrontFile = ref(null)
@@ -147,11 +148,70 @@
   const ineBackInput = ref(null)
   const passportInput = ref(null)
   const router = useRouter(); // Definir router usando useRouter
+  const token = Cookie.get('token');
+
 
   const ineFrontPreview = ref('')
   const ineBackPreview = ref('')
   const passportPreview = ref('')
   
+
+
+
+  onMounted(async () => {
+  const token = Cookie.get('token');
+
+  const response = await fetch(process.env.VUE_APP_STAGE, {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+
+  // Imprimir el estado de la respuesta y verificar si es 200 (éxito)
+  console.log('Response status:', response.status);
+  console.log('Response headers:', response.headers);
+
+  if (response.ok) { // Verifica si la respuesta es exitosa
+    const stage = await response.json();
+    console.log('Stage:', stage);
+    console.log(stage.stage);
+
+    // Mapeo de rutas basado en cada stage
+    const routes = {
+      PROCESS_AND_VALIDATE_DOC: '/',
+      VALIDATE_IDENTITY: '/verificacion-biometrica',
+      VERIFY_LIVENESS: '/verify_liveness',
+      COMPLETED: '/success',
+    };
+
+    // Redireccionar solo si la ruta actual no coincide con la ruta esperada para el stage actual
+    const expectedRoute = routes[stage.stage];
+    if (expectedRoute && expectedRoute !== router.currentRoute.path) {
+      router.push(expectedRoute);
+      return; // Salir de la función para evitar que se ejecute el SweetAlert
+    } else {
+      console.log("El stage actual coincide con la ruta, no se hace redirección.");
+    }
+  }
+
+  Swal.fire({
+    title: 'Instrucciones para subir INE o Pasaporte',
+    html: `
+        <ul style="text-align: left;">
+          <li>Asegúrate de que el documento esté bien iluminado.</li>
+          <li>Evita reflejos o sombras en el documento.</li>
+          <li>Asegúrate de que todo el documento sea visible y legible.</li>
+          <li>No cubras ninguna parte del documento con tus dedos.</li>
+          <li>Sube una imagen en formato JPG o PNG.</li>
+          <li>El tamaño del archivo no debe exceder los 5MB.</li>
+        </ul>
+      `,
+    icon: 'info',
+    confirmButtonText: 'Aceptar'
+  });
+});
+
   const goBack = () => {
     currentView.value = 'main'
     ineFrontFile.value = null
@@ -201,81 +261,101 @@
     }
     reader.readAsDataURL(file)
   }
+
+
   const uploadINE = async () => {
+  // Validación inicial de archivos
   if (!ineFrontFile.value || !ineBackFile.value) return;
 
+  // Crear FormData con los archivos INE
   const formData = new FormData();
   formData.append('ineFront', ineFrontFile.value);
   formData.append('ineBack', ineBackFile.value);
   
-  // Obtener el token desde la cookie
-  const token = Cookie.get('token'); 
   console.log('Token:', token);
   
   try {
-    // Obtener coordenadas de geolocalización
-    navigator.geolocation.getCurrentPosition(async (position) => {
-      const latitude = position.coords.latitude;
-      const longitude = position.coords.longitude;
-
-      // Añadir coordenadas al FormData
-      formData.append('latitude', latitude);
-      formData.append('longitude', longitude);
-      console.log('Coordenadas:', latitude, longitude);
-      
-      // Hacer la petición
-      const response = await fetch(process.env.VUE_APP_INE, {
-        method: 'POST',
-        body: formData,
-        mode: 'cors', // Permite CORS
-        headers: {
-          'Authorization': `Bearer ${token}`, // Incluir el token de autorización
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error('Error al subir los archivos de INE');
-      }
-
-      const result = await response.json();
-      console.log('Archivos de INE subidos exitosamente:', result);
-
-      // Redirigir a otra ruta con parámetros de ruta
-      router.push({
-        name: 'VerificacionBiometrica', // Nombre de la ruta de redirección
-        // params: {
-        //   path: result.path, // Parámetro de ruta de ejemplo
-        // }
-      });
-    }, 
-    (error) => {
-      console.error("Error al obtener las coordenadas:", error);
+    // Convertir getCurrentPosition a Promise
+    const position = await new Promise((resolve, reject) => {
+      navigator.geolocation.getCurrentPosition(resolve, reject);
     });
-  } catch (error) {
-    console.error('Error al subir los archivos de INE:', error);
-  }
-};      
-  
-  const uploadPassport = async () => {
-  if (!passportFile.value) return
 
-  const formData = new FormData()
-  formData.append('passport', passportFile.value)
+    const latitude = position.coords.latitude;
+    const longitude = position.coords.longitude;
 
-  try {
-    const response = await fetch('https://your-backend-url.com/upload', {
+    // Añadir coordenadas al FormData
+    formData.append('latitude', latitude);
+    formData.append('longitude', longitude);
+    console.log('Coordenadas:', latitude, longitude);
+    
+    // Hacer la petición
+    const response = await fetch(process.env.VUE_APP_INE, {
       method: 'POST',
       body: formData,
-    })
+      mode: 'cors',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
 
     if (!response.ok) {
-      throw new Error('Failed to upload file')
+      throw new Error('Error al subir los archivos de INE');
     }
 
-    const result = await response.json()
-    console.log('File uploaded successfully:', result)
+    const result = await response.json();
+    console.log('Archivos de INE subidos exitosamente:', result);
+
+    router.push({
+      name: 'VerificacionBiometrica',
+    });
+
   } catch (error) {
-    console.error('Error uploading file:', error)
+    console.error('Error:', error);
+    // Aquí podrías añadir manejo de errores específicos
+    if (error.name === 'GeolocationPositionError') {
+      console.error('Error de geolocalización:', error.message);
+    } else {
+      console.error('Error al subir los archivos de INE:', error);
+    }
+  }
+};
+
+const uploadPassport = async () => {
+  if (!passportFile.value) return;
+
+  try {
+    // Obtener posición primero
+    const position = await new Promise((resolve, reject) => {
+      navigator.geolocation.getCurrentPosition(resolve, reject);
+    });
+
+    const formData = new FormData();
+    formData.append('passport', passportFile.value);
+    formData.append('latitude', position.coords.latitude);
+    formData.append('longitude', position.coords.longitude);
+    console.log('Coordenadas:', position.coords.latitude, position.coords.longitude);
+    
+    console.log(process.env.VUE_APP_PASSPORT);
+    
+    const response = await fetch(process.env.VUE_APP_PASSPORT, {
+      method: 'POST',
+      body: formData,
+      mode: 'cors',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to upload file');
+    }
+
+    const result = await response.json();
+    console.log('File uploaded successfully:', result);
+  } catch (error) {
+    console.error('Error uploading file:', error);
   }
 }
+
+
   </script>

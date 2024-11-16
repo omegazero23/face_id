@@ -23,7 +23,6 @@ const routes = [
     path: '/error',
     name: 'Error',
     component: ErrorPage,
-    meta: { requiresAuth: true }
 
   },
   {

@@ -14,7 +14,7 @@
         </div>
         <div class="mt-8 flex justify-center">
           <button @click="celebrate" class="px-6 py-3 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-75 transition duration-300 ease-in-out">
-            Continuar
+            Felicidades! 🎉
           </button>
         </div>
       </div>
@@ -25,7 +25,7 @@
   </template>
   
   <script setup>
-  import { ref } from 'vue'
+  import { ref, onMounted } from 'vue'
   
   const showConfetti = ref(false)
   
@@ -35,6 +35,46 @@
       showConfetti.value = false
     }, 5000) // Hide confetti after 5 seconds
   }
+
+
+    onMounted(async () => {
+  const token = Cookie.get('token');
+
+  const response = await fetch(process.env.VUE_APP_STAGE, {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+
+  // Imprimir el estado de la respuesta y verificar si es 200 (éxito)
+  console.log('Response status:', response.status);
+  console.log('Response headers:', response.headers);
+
+  if (response.ok) { // Verifica si la respuesta es exitosa
+    const stage = await response.json();
+    console.log('Stage:', stage);
+    console.log(stage.stage);
+
+    // Mapeo de rutas basado en cada stage
+    const routes = {
+      PROCESS_AND_VALIDATE_DOC: '/',
+      VALIDATE_IDENTITY: '/verificacion-biometrica',
+      VERIFY_LIVENESS: '/verify_liveness',
+      COMPLETED: '/success',
+    };
+
+    // Redireccionar solo si la ruta actual no coincide con la ruta esperada para el stage actual
+    const expectedRoute = routes[stage.stage];
+    if (expectedRoute && expectedRoute !== router.currentRoute.path) {
+      router.push(expectedRoute);
+      return; // Salir de la función para evitar que se ejecute el SweetAlert
+    } else {
+      console.log("El stage actual coincide con la ruta, no se hace redirección.");
+    }
+  }
+
+});
   </script>
   
   <style scoped>

@@ -91,9 +91,64 @@ const steps = [
 
 
 onMounted(async () => {
+  const token = Cookie.get('token');
+
+  const response = await fetch(process.env.VUE_APP_STAGE, {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+
+  // Imprimir el estado de la respuesta y verificar si es 200 (éxito)
+  console.log('Response status:', response.status);
+  console.log('Response headers:', response.headers);
+
+  if (response.ok) { // Verifica si la respuesta es exitosa
+    const stage = await response.json();
+    console.log('Stage:', stage);
+    console.log(stage.stage);
+
+    // Mapeo de rutas basado en cada stage
+    const routes = {
+      PROCESS_AND_VALIDATE_DOC: '/',
+      VALIDATE_IDENTITY: '/verificacion-biometrica',
+      VERIFY_LIVENESS: '/verify_liveness',
+      COMPLETED: '/success',
+    };
+
+    // Obtener la ruta actual
+    const currentRoute = router.currentRoute.value.path;
+    console.log('Current route:', currentRoute);
+
+    // Redireccionar solo si la ruta actual no coincide con la ruta esperada para el stage actual
+    const expectedRoute = routes[stage.stage];
+    if (expectedRoute && expectedRoute !== currentRoute) {
+      router.push(expectedRoute);
+      return; // Salir de la función para evitar que se ejecute el SweetAlert y la cámara
+    } else {
+      console.log("El stage actual coincide con la ruta, no se hace redirección.");
+    }
+  }
+
+  Swal.fire({
+    title: 'Instrucciones para subir INE o Pasaporte',
+    html: `
+        <ul style="text-align: left;">
+          <li>Asegúrate de que el documento esté bien iluminado.</li>
+          <li>Evita reflejos o sombras en el documento.</li>
+          <li>Asegúrate de que todo el documento sea visible y legible.</li>
+          <li>No cubras ninguna parte del documento con tus dedos.</li>
+          <li>Sube una imagen en formato JPG o PNG.</li>
+          <li>El tamaño del archivo no debe exceder los 5MB.</li>
+        </ul>
+      `,
+    icon: 'info',
+    confirmButtonText: 'Aceptar'
+  });
+
   await startCamera();
 });
-
 function startTimer() {
   timeLeft.value = 20;
   showTimer.value = true;
