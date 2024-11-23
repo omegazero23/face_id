@@ -42,6 +42,7 @@ import { FACEMESH_TESSELATION } from '@mediapipe/face_mesh';
 import Swal from 'sweetalert2';
 import Cookie from 'js-cookie';
 import { useRouter } from 'vue-router';
+import { faker } from '@faker-js/faker/locale/es';
 
 
 // mounted() {
@@ -82,13 +83,54 @@ let timerInterval;
 let lastStepTime = 0;
 const MIN_TIME_BETWEEN_STEPS = 1400;
 
-const randomPhrases = [
-  "El sol brilla en el cielo azul",
-  "Los pájaros cantan en primavera",
-  "El viento sopla entre los árboles",
-  "Las olas del mar son tranquilas",
-  "La luna ilumina la noche oscura"
-];
+function generateRandomPhrase() {
+  const structures = [
+    () => {
+      const color = faker.color.human();
+      const animal = faker.animal.type();
+      const location = faker.location.city();
+      return `El ${color} ${animal} corre por las calles de ${location}`;
+    },
+    () => {
+      const name = faker.person.firstName();
+      const object = faker.commerce.product();
+      const place = faker.location.city();
+      return `${name} compró un nuevo ${object} ayer en ${place}`;
+    },
+    () => {
+      const number = faker.number.int({ min: 2, max: 10 });
+      const adj = faker.commerce.productAdjective();
+      const object = faker.commerce.product();
+      return `Los ${number} ${adj} ${object} están sobre la mesa`;
+    },
+    () => {
+      const vehicle = faker.vehicle.type();
+      const color = faker.color.human();
+      const location = faker.location.city();
+      return `El ${vehicle} ${color} viaja desde aquí hasta ${location}`;
+    },
+    () => {
+      const name = faker.person.firstName();
+      const pet = faker.animal.pet();
+      const action = faker.word.verb();
+      return `Mi amigo ${name} y su ${pet} ${action} juntos`;
+    }
+  ];
+
+  // Seleccionar una estructura aleatoria y generar la frase
+  const selectedStructure = structures[Math.floor(Math.random() * structures.length)];
+  const phrase = selectedStructure();
+  
+  // Verificación de debug - puede removerse en producción
+  const wordCount = phrase.split(' ').length;
+  if (wordCount !== 8) {
+    console.warn(`Frase generada con ${wordCount} palabras: "${phrase}"`);
+    // Fallback a una estructura fija si la frase no tiene 8 palabras
+    return `El gran ${faker.animal.type()} corre por el ${faker.location.city()}`;
+  }
+  
+  return phrase;
+}
 
 let currentPhrase = '';
 
@@ -288,7 +330,7 @@ function validateHeadPosition(landmarks) {
   else if (stepsCompleted.left && stepsCompleted.right && !stepsCompleted.center && isHeadCentered(landmarks)) {
     stepsCompleted.center = true;
     lastStepTime = currentTime;
-    currentPhrase = randomPhrases[Math.floor(Math.random() * randomPhrases.length)];
+    currentPhrase = generateRandomPhrase();
     message.value = `Por favor, di en voz alta: "${currentPhrase}"`;
     startPhraseValidation();
     updateProgress();
