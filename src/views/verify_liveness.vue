@@ -117,6 +117,8 @@ onMounted(async () => {
     method: 'GET',
     headers: {
       'Authorization': `Bearer ${token}`,
+      'ngrok-skip-browser-warning': 'true'
+
     },
   });
 
@@ -345,6 +347,8 @@ async function sendVideoToServer(blob) {
       body: formData,
       headers: {
         'Authorization': `Bearer ${token}`,
+        'ngrok-skip-browser-warning': 'true'
+
       },
     });
 

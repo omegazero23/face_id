@@ -181,17 +181,35 @@ const token = Cookies.get('token')
 
 onMounted(async () => {
   try {
-    console.log(process.env.VUE_APP_STAGE);
+    console.log('VUE_APP_STAGE:', process.env.VUE_APP_STAGE);
+
     
     const response = await fetch(process.env.VUE_APP_STAGE, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json', // Asegúrate de que el servidor espera JSON
+        'Accept': 'application/json',
+        'ngrok-skip-browser-warning': 'true'
+
       },
+      mode: 'cors'
     })
 
-    console.log('Response status:', response.status)
-    console.log('Response headers:', response.headers)
+    console.log('Response status:', response.status);
+    console.log('Headers:', Object.fromEntries(response.headers.entries()));
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.body}`);
+    }
+
+    const contentType = response.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      const errorText = await response.text(); // Obtener el texto del cuerpo de la respuesta
+      throw new Error(`HTTP error! status: ${response.status}, body: ${errorText}`);
+
+    }
+
 
     if (response.ok) {
       const stage = await response.json()
@@ -293,6 +311,8 @@ const uploadINE = async () => {
       body: formData,
       headers: {
         'Authorization': `Bearer ${token}`,
+        'ngrok-skip-browser-warning': 'true'
+
       },
     })
 

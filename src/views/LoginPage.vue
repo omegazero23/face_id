@@ -78,10 +78,12 @@ export default {
             method: 'POST',
             credentials: 'include',
             headers: {
-              'Content-Type': 'application/json'
+              'Content-Type': 'application/json',
+              'ngrok-skip-browser-warning': 'true'
+
             },
             body: JSON.stringify({ latitude, longitude }),
-            mode: 'cors'
+            // mode: 'cors'
           }
         );
         console.log('Status:', response.status);
@@ -89,7 +91,7 @@ export default {
         const data = await response.json();
 
         console.log('Datos recibidos:', data);
-        console.log('Status:', data.status);
+        console.log('Status:', data.stage);
         console.log(data.status === 'success');
 
         // Si la validación es exitosa, redirigir a la página principal

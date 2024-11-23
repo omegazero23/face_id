@@ -1,19 +1,17 @@
-const { defineConfig } = require('@vue/cli-service')
-
 module.exports = {
   devServer: {
-    https: true,  // Activa HTTPS en el servidor de desarrollo de Vue
+    // Configuración HTTPS para desarrollo
+    https: process.env.NODE_ENV === 'production' ? false : true,
+
+    // Configuración del proxy para redirigir las solicitudes al backend
     proxy: {
       '/api': {
-        target: 'https://127.0.0.1',  // Ajusta a tu backend en Docker
+        target: process.env.VUE_APP_API_URL, // Utiliza la URL base del backend
         changeOrigin: true,
-        secure: false,  // Esto es útil para certificados auto-firmados
-      },
-      '/login': {
-        target: 'https://127.0.0.1',  // Ajusta a tu backend en Docker
-        changeOrigin: true,
-        secure: false,  // Esto es útil para certificados auto-firmados
+        secure: false, // Permite certificados auto-firmados en desarrollo
       },
     },
+    port: 8080, // Configura el puerto del servidor de desarrollo
+    open: true, // Abre el navegador automáticamente
   },
 };

@@ -1,0 +1,10 @@
+{
+    "port": 8080,
+    "https": {
+      "cert": "./cert.pem",
+      "key": "./key.pem"
+    },
+    "rewrites": [
+      { "source": "**", "destination": "/index.html" }
+    ]
+  }

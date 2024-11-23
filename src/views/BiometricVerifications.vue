@@ -6,13 +6,21 @@
       <video id="input-video" style="display: none;" autoplay></video>
       <canvas id="output-canvas" ref="outputCanvas"></canvas>
     </div>
-    <div id="message" class="message">{{ message }}</div>
-    <button id="capture-button" @click="captureImage" :disabled="!criteriaMet" :class="{ enabled: criteriaMet }">
+    <div id="message" class="message" v-show="!isCapturing">{{ message }}</div>
+    <button id="capture-button" @click="captureImage" :disabled="!criteriaMet" :class="{ enabled: criteriaMet }"
+      v-show="!isCapturing">
       Estoy listo
     </button>
     <div id="preloader_1" v-show="isCapturing">
       <span v-for="i in 5" :key="i"></span>
     </div>
+    <div v-show="isLoading" class="loading-overlay">
+      <div class="loading-content">
+        <div class="spinner"></div>
+        <p>Cargando...</p>
+      </div>
+    </div>
+
     <div id="captured-image-container" ref="capturedImageContainer"></div>
   </div>
 </template>
@@ -35,6 +43,7 @@ const isCapturing = ref(false);
 const lastImageData = ref(null);
 const ineFile = ref('');
 const router = useRouter();
+const isLoading = ref(false); // Estado de carga
 
 //const route = useRoute(); // Usar useRoute para obtener el parámetro de ruta
 
@@ -47,6 +56,8 @@ onMounted(async () => {
     method: 'GET',
     headers: {
       'Authorization': `Bearer ${token}`,
+      'ngrok-skip-browser-warning': 'true'
+
     },
   });
 
@@ -93,7 +104,7 @@ onMounted(async () => {
   outputCanvas.value.height = videoHeight;
 
   setupFaceMesh();
-  setupCamera();
+  await setupCamera();
 
   window.addEventListener('resize', handleResize);
 
@@ -204,9 +215,7 @@ function onResults(results) {
     criteriaMet.value = false;
     console.log("No se detectó ningún rostro");
   }
-}
-
-function validateFacePositionAndQuality(landmarks) {
+} function validateFacePositionAndQuality(landmarks) {
   const pixelLandmarks = landmarks.map(landmark => ({
     x: landmark.x * outputCanvas.value.width,
     y: landmark.y * outputCanvas.value.height,
@@ -234,6 +243,42 @@ function validateFacePositionAndQuality(landmarks) {
   } else if (faceWidth > maxFaceSize || faceHeight > maxFaceSize) {
     message.value = "Aléjate un poco de la cámara.";
     console.log("La cara está muy cerca");
+    return false;
+  }
+
+  // Verificar si la cara está centrada en el canvas
+  const centerX = outputCanvas.value.width / 2;
+  const centerY = outputCanvas.value.height / 2;
+  const faceCenterX = (pixelLandmarks[234].x + pixelLandmarks[454].x) / 2;
+  const faceCenterY = (pixelLandmarks[10].y + pixelLandmarks[152].y) / 2;
+
+  // Ajustar el rango permitido para el desplazamiento del centro de la cara
+  const tolerance = 0.20; // Permitir un cuarto del tamaño de la cara en cualquier dirección
+  const faceCentered = Math.abs(faceCenterX - centerX) < faceWidth * tolerance && Math.abs(faceCenterY - centerY) < faceHeight * tolerance;
+  // Verificar si la cara está mirando al frente
+  const nose = pixelLandmarks[1];
+  const leftEye = pixelLandmarks[159];
+  const rightEye = pixelLandmarks[386];
+  const noseToLeftEye = Math.sqrt(Math.pow(nose.x - leftEye.x, 2) + Math.pow(nose.y - leftEye.y, 2));
+  const noseToRightEye = Math.sqrt(Math.pow(nose.x - rightEye.x, 2) + Math.pow(nose.y - rightEye.y, 2));
+  const lookingForward = Math.abs(noseToLeftEye - noseToRightEye) < faceWidth * 0.1;
+
+  // Verificar si la cara está recta
+  const eyeSlope = (rightEye.y - leftEye.y) / (rightEye.x - leftEye.x);
+  const eyeAngle = Math.atan(eyeSlope) * (180 / Math.PI);
+  const faceStraight = Math.abs(eyeAngle) < 10; // Permitir una inclinación de hasta 10 grados
+
+  if (!faceCentered) {
+    message.value = "Por favor, centra tu rostro en el marco.";
+    console.log("La cara no está centrada");
+    return false;
+  } else if (!lookingForward) {
+    message.value = "Por favor, mira al frente.";
+    console.log("La cara no está mirando al frente");
+    return false;
+  } else if (!faceStraight) {
+    message.value = "Por favor, mantén tu rostro recto.";
+    console.log("La cara está inclinada");
     return false;
   }
 
@@ -292,15 +337,16 @@ function checkBrightness(canvasElement, landmarks) {
     brightness: averageBrightness,
     isOptimal: averageBrightness >= minBrightness && averageBrightness <= maxBrightness,
     message: averageBrightness < minBrightness ?
-      `La iluminación es muy baja (${averageBrightness.toFixed(2)}). Busca un lugar más iluminado.` :
+      `La iluminación es muy baja. Busca un lugar más iluminado.` :
       averageBrightness > maxBrightness ?
-        `Hay demasiada luz (${averageBrightness.toFixed(2)}). Busca un lugar con menos iluminación.` :
-        `La iluminación es adecuada (${averageBrightness.toFixed(2)}).`
+        `Hay demasiada luz. Busca un lugar con menos iluminación.` :
+        `La iluminación es adecuada.`
   };
 }
 async function captureImage() {
   if (criteriaMet.value && lastImageData.value) {
     isCapturing.value = true;
+    isLoading.value = true; // Mostrar indicador de carga
 
     // Intentar obtener la ubicación geográfica
     navigator.geolocation.getCurrentPosition(async (position) => {
@@ -324,7 +370,7 @@ async function captureImage() {
         imgElement.src = imgURL;
         imgElement.alt = 'Imagen Capturada';
         imgElement.style.maxWidth = '100%';
-        capturedImageContainer.value.appendChild(imgElement);
+        // capturedImageContainer.value.appendChild(imgElement);
 
         for (let [key, value] of formData.entries()) {
           console.log(`${key}: ${value}`);
@@ -489,8 +535,13 @@ async function captureImage() {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .captured-image-container {
@@ -502,11 +553,60 @@ async function captureImage() {
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
 }
 
-.fade-enter-active, .fade-leave-active {
+.fade-enter-active,
+.fade-leave-active {
   transition: opacity 0.5s ease;
 }
 
-.fade-enter-from, .fade-leave-to {
+.fade-enter-from,
+.fade-leave-to {
   opacity: 0;
+}
+
+
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.loading-content {
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.spinner {
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #3498db;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 10px;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.loading-content p {
+  margin: 0;
+  font-size: 16px;
+  color: #333;
 }
 </style>
