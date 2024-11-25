@@ -330,7 +330,7 @@ function checkBrightness(canvasElement, landmarks) {
 
   const averageBrightness = totalBrightness / pixelCount;
 
-  const minBrightness = 50;
+  const minBrightness = 40;
   const maxBrightness = 220;
 
   return {

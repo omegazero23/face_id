@@ -96,18 +96,8 @@ export default {
 
         // Si la validación es exitosa, redirigir a la página principal
         if (data.valid === true) {
-          const expirationdate = new Date(new Date().getTime() + 60 * 60 * 1000);
+          const expirationdate = new Date(new Date().getTime() + 15 * 60 * 1000);
           Cookie.set('token', token, { expires: expirationdate });
-
-          // if (data.stage === 'PROCESS_AND_VALIDATE_DOC') {
-          //   router.push('/verificacion-biometrica');
-          // } else if (data.stage === 'VALIDATE_IDENTITY') {
-          //   router.push('/register');
-          // } else if (data.stage === 'VERIFY_LIVENESS') {
-          //   router.push('/');
-          // }else if (data.stage === 'COMPLETED') {
-          //   router.push('/success');
-          // }
           router.push('/');
         } else {
           throw new Error('Error validando el token');
