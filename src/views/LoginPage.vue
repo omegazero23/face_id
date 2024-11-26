@@ -52,10 +52,7 @@ import { useRouter } from 'vue-router';
 import { LockIcon, XCircleIcon } from 'lucide-vue-next';
 import Cookie from 'js-cookie';
 
-
-
 export default {
-
   name: 'RegisterPage',
 
   components: {
@@ -67,6 +64,7 @@ export default {
     const router = useRouter();
     const loading = ref(true);
     const error = ref(null);
+          const expirationdate = new Date(new Date().getTime() + 15 * 60 * 1000);
 
     const validateToken = async (token, latitude, longitude) => {
       try {
@@ -80,10 +78,8 @@ export default {
             headers: {
               'Content-Type': 'application/json',
               'ngrok-skip-browser-warning': 'true'
-
             },
             body: JSON.stringify({ latitude, longitude }),
-            // mode: 'cors'
           }
         );
         console.log('Status:', response.status);
@@ -94,9 +90,7 @@ export default {
         console.log('Status:', data.stage);
         console.log(data.status === 'success');
 
-        // Si la validación es exitosa, redirigir a la página principal
         if (data.valid === true) {
-          const expirationdate = new Date(new Date().getTime() + 15 * 60 * 1000);
           Cookie.set('token', token, { expires: expirationdate });
           router.push('/');
         } else {
@@ -123,16 +117,20 @@ export default {
           const latitude = position.coords.latitude;
           const longitude = position.coords.longitude;
           validateToken(token, latitude, longitude);
+          Cookie.set('token', token, { expires: expirationdate });
+
         },
-        (error) => {
-          console.error('Error al obtener las coordenadas:', error);
-          error.value = 'No se pudo obtener tu ubicación. Por favor, intenta nuevamente.';
+        (geoError) => {
+          console.error('Error al obtener las coordenadas:', geoError);
+          error.value = 'Los permisos de ubicación son obligatorios para continuar. Por favor, habilita el acceso a tu ubicación e intenta nuevamente.';
           loading.value = false;
-        }
+        },
+        { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
       );
     };
 
     onMounted(() => {
+      
       const token = router.currentRoute.value.params.jwt;
       if (!token) {
         error.value = 'Token no proporcionado';
@@ -153,12 +151,9 @@ export default {
 
 <style scoped>
 @keyframes pulse {
-
-  0%,
-  100% {
+  0%, 100% {
     opacity: 1;
   }
-
   50% {
     opacity: 0.5;
   }

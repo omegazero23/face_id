@@ -152,15 +152,65 @@
         </div>
       </transition>
     </div>
+
+    <!-- Modal de recorte -->
+    <transition name="fade">
+  <div v-if="showCropper.ineFront || showCropper.ineBack || showCropper.passport" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white p-6 rounded-lg shadow-xl w-11/12 max-w-2xl">
+      <h3 class="text-lg font-bold mb-4">Recortar imagen</h3>
+      <Cropper
+        v-if="currentCropImage"
+        class="h-96 mb-4"
+        :src="currentCropImage"
+        @change="cropImage"
+        :stencil-props="{
+          aspectRatio: 1.6
+        }"
+        :default-size="{
+          width: 400,
+          height: 250
+        }"
+        :resize-image="{
+          touch: true,
+          wheel: true,
+          zoom: true
+        }"
+        :transitions="true"
+        :canvas="{
+          width: 1000,
+          height: 1000
+        }"
+        :image-restriction="'stencil'"
+        ref="cropperRef"
+      />
+      <div class="flex justify-between items-center mb-4">
+        <button @click="rotateImage" class="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300">
+          <RotateCwIcon class="h-5 w-5" />
+          Rotar
+        </button>
+        <div>
+          <button @click="cancelCropping" class="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 mr-2">
+            Cancelar
+          </button>
+          <button @click="finishCropping" class="px-4 py-2 bg-black text-white rounded hover:bg-gray-800">
+            Finalizar recorte
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</transition>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import { ArrowLeftIcon, UploadIcon } from 'lucide-vue-next'
+import { ref, onMounted, reactive, computed } from 'vue'
+import { ArrowLeftIcon, UploadIcon, RotateCwIcon } from 'lucide-vue-next'
 import { useRouter } from 'vue-router'
 import Cookies from 'js-cookie'
 import Swal from 'sweetalert2'
+import { Cropper } from 'vue-advanced-cropper'
+import 'vue-advanced-cropper/dist/style.css'
 
 const currentView = ref('main')
 const ineFrontFile = ref(null)
@@ -179,19 +229,35 @@ const passportInput = ref(null)
 const router = useRouter()
 const token = Cookies.get('token')
 
+const showCropper = reactive({
+  ineFront: false,
+  ineBack: false,
+  passport: false
+})
+
+const currentCropType = ref(null)
+const currentCropperResult = ref(null)
+const cropperRef = ref(null)
+const rotation = ref(0)
+
+const currentCropImage = computed(() => {
+  if (showCropper.ineFront) return ineFrontPreview.value
+  if (showCropper.ineBack) return ineBackPreview.value
+  if (showCropper.passport) return passportPreview.value
+  return ''
+})
+
 onMounted(async () => {
   try {
     console.log('VUE_APP_STAGE:', process.env.VUE_APP_STAGE);
 
-    
     const response = await fetch(process.env.VUE_APP_STAGE, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json', // Asegúrate de que el servidor espera JSON
+        'Content-Type': 'application/json',
         'Accept': 'application/json',
         'ngrok-skip-browser-warning': 'true'
-
       },
       mode: 'cors'
     })
@@ -205,11 +271,9 @@ onMounted(async () => {
 
     const contentType = response.headers.get('content-type');
     if (!contentType || !contentType.includes('application/json')) {
-      const errorText = await response.text(); // Obtener el texto del cuerpo de la respuesta
+      const errorText = await response.text();
       throw new Error(`HTTP error! status: ${response.status}, body: ${errorText}`);
-
     }
-
 
     if (response.ok) {
       const stage = await response.json()
@@ -260,6 +324,10 @@ const goBack = () => {
   ineBackPreview.value = ''
   passportPreview.value = ''
   errorMessage.value = ''
+  showCropper.ineFront = false
+  showCropper.ineBack = false
+  showCropper.passport = false
+  rotation.value = 0
 }
 
 const triggerFileInput = (type) => {
@@ -276,16 +344,81 @@ const handleFileSelect = (type, event) => {
       if (type === 'ineFront') {
         ineFrontFile.value = file
         ineFrontPreview.value = e.target.result
+        showCropper.ineFront = true
       } else if (type === 'ineBack') {
         ineBackFile.value = file
         ineBackPreview.value = e.target.result
+        showCropper.ineBack = true
       } else if (type === 'passport') {
         passportFile.value = file
         passportPreview.value = e.target.result
+        showCropper.passport = true
       }
+      currentCropType.value = type
+      rotation.value = 0
     }
     reader.readAsDataURL(file)
   }
+}
+
+const cropImage = (cropperResult) => {
+  currentCropperResult.value = cropperResult
+  console.log('Crop coordinates:', cropperResult.coordinates)
+}
+
+const rotateImage = () => {
+  rotation.value = (rotation.value + 90) % 360
+  if (cropperRef.value) {
+    cropperRef.value.rotate(90)
+  }
+}
+
+const finishCropping = () => {
+  if (currentCropperResult.value && currentCropperResult.value.canvas) {
+    const { width, height } = currentCropperResult.value.coordinates
+    const croppedImage = currentCropperResult.value.canvas.toDataURL('image/jpeg', 0.8)
+    if (currentCropType.value === 'ineFront') {
+      ineFrontPreview.value = croppedImage
+      ineFrontFile.value = dataURLtoFile(croppedImage, `ineFront_${width}x${height}_rot${rotation.value}.jpg`)
+      showCropper.ineFront = false
+    } else if (currentCropType.value === 'ineBack') {
+      ineBackPreview.value = croppedImage
+      ineBackFile.value = dataURLtoFile(croppedImage, `ineBack_${width}x${height}_rot${rotation.value}.jpg`)
+      showCropper.ineBack = false
+    } else if (currentCropType.value === 'passport') {
+      passportPreview.value = croppedImage
+      passportFile.value = dataURLtoFile(croppedImage, `passport_${width}x${height}_rot${rotation.value}.jpg`)
+      showCropper.passport = false
+    }
+  }
+  currentCropType.value = null
+  currentCropperResult.value = null
+  rotation.value = 0
+}
+
+const cancelCropping = () => {
+  if (currentCropType.value === 'ineFront') {
+    showCropper.ineFront = false
+  } else if (currentCropType.value === 'ineBack') {
+    showCropper.ineBack = false
+  } else if (currentCropType.value === 'passport') {
+    showCropper.passport = false
+  }
+  currentCropType.value = null
+  currentCropperResult.value = null
+  rotation.value = 0
+}
+
+const dataURLtoFile = (dataurl, filename) => {
+  const arr = dataurl.split(',')
+  const mime = arr[0].match(/:(.*?);/)[1]
+  const bstr = atob(arr[1])
+  let n = bstr.length
+  const u8arr = new Uint8Array(n)
+  while (n--) {
+    u8arr[n] = bstr.charCodeAt(n)
+  }
+  return new File([u8arr], filename, { type: mime })
 }
 
 const uploadINE = async () => {
@@ -312,7 +445,6 @@ const uploadINE = async () => {
       headers: {
         'Authorization': `Bearer ${token}`,
         'ngrok-skip-browser-warning': 'true'
-
       },
     })
 

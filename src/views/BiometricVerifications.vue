@@ -344,7 +344,7 @@ function checkBrightness(canvasElement, landmarks) {
   };
 }
 async function captureImage() {
-  if (criteriaMet.value && lastImageData.value) {
+  if (criteriaMet.value) {
     isCapturing.value = true;
     isLoading.value = true; // Mostrar indicador de carga
 
@@ -352,35 +352,25 @@ async function captureImage() {
     navigator.geolocation.getCurrentPosition(async (position) => {
       const { latitude, longitude } = position.coords;
 
-      const originalCanvas = document.createElement('canvas');
-      originalCanvas.width = outputCanvas.value.width;
-      originalCanvas.height = outputCanvas.value.height;
-      const originalCtx = originalCanvas.getContext('2d');
-      originalCtx.putImageData(lastImageData.value, 0, 0);
+      // Crear un canvas temporal para capturar la imagen del video
+      const videoElement = document.getElementById('input-video');
+      const tempCanvas = document.createElement('canvas');
+      tempCanvas.width = videoElement.videoWidth;
+      tempCanvas.height = videoElement.videoHeight;
+      const tempCtx = tempCanvas.getContext('2d');
+      tempCtx.drawImage(videoElement, 0, 0, tempCanvas.width, tempCanvas.height);
 
-      originalCanvas.toBlob(async (blob) => {
+      // Convertir el canvas a un blob
+      tempCanvas.toBlob(async (blob) => {
         const formData = new FormData();
         formData.append('person_image', blob, 'image.jpg');
         formData.append('latitude', latitude); // Añadir latitud al formulario
         formData.append('longitude', longitude); // Añadir longitud al formulario
-        //const pathParam = route.params.path;
-        //formData.append('path_img', );
-        const imgURL = URL.createObjectURL(blob);
-        const imgElement = document.createElement('img');
-        imgElement.src = imgURL;
-        imgElement.alt = 'Imagen Capturada';
-        imgElement.style.maxWidth = '100%';
-        // capturedImageContainer.value.appendChild(imgElement);
-
-        for (let [key, value] of formData.entries()) {
-          console.log(`${key}: ${value}`);
-        }
 
         const token = Cookie.get('token');
         console.log('Token:', token);
 
         try {
-
           const response = await fetch(process.env.VUE_APP_BIOMETRIC, {
             method: 'POST',
             body: formData,
@@ -407,11 +397,6 @@ async function captureImage() {
               confirmButtonText: 'Aceptar'
             }).then((result) => {
               if (result.isConfirmed) {
-                // const filePath = encodeURIComponent(data.filePath);
-
-                // const jwt = encodeURIComponent(localStorage.getItem('jwtToken'));
-                // console.log(jwt);
-
                 router.push('/verify_liveness');
               }
             });
