@@ -88,11 +88,11 @@ router.beforeEach((to, from, next) => {
     }
   }
 
-  // Si va a register y ya tiene token válido
-  if (to.name === 'Register' && isTokenValid(token)) {
-    next({ path: '/' });
-    return;
-  }
+  // // Si va a register y ya tiene token válido
+  // if (to.name === 'Register' && isTokenValid(token)) {
+  //   next({ path: '/' });
+  //   return;
+  // }
 
   next();
 });

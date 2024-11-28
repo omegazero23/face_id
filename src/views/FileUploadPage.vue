@@ -66,6 +66,7 @@
                 class="hidden"
                 @change="handleFileSelect('ineFront', $event)"
                 accept="image/*"
+                capture="environment"
               />
               <UploadIcon v-if="!ineFrontFile" class="h-8 w-8 mx-auto mb-2 text-gray-400" />
               <img v-else :src="ineFrontPreview" alt="INE Frente Preview" class="max-h-40 mx-auto mb-2" />
@@ -88,6 +89,7 @@
                 class="hidden"
                 @change="handleFileSelect('ineBack', $event)"
                 accept="image/*"
+                capture="environment"
               />
               <UploadIcon v-if="!ineBackFile" class="h-8 w-8 mx-auto mb-2 text-gray-400" />
               <img v-else :src="ineBackPreview" alt="INE Reverso Preview" class="max-h-40 mx-auto mb-2" />
@@ -123,6 +125,7 @@
                 class="hidden"
                 @change="handleFileSelect('passport', $event)"
                 accept="image/*"
+                capture="environment"
               />
               <UploadIcon v-if="!passportFile" class="h-8 w-8 mx-auto mb-2 text-gray-400" />
               <img v-else :src="passportPreview" alt="Pasaporte Preview" class="max-h-40 mx-auto mb-2" />
