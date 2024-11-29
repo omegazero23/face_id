@@ -234,7 +234,7 @@ function onResults(results) {
 
   const isMobile = window.innerWidth < 768;
   const minFaceSize = isMobile ? Math.min(outputCanvas.value.width, outputCanvas.value.height) * 0.30 : Math.min(outputCanvas.value.width, outputCanvas.value.height) * 0.45;
-  const maxFaceSize = isMobile ? Math.min(outputCanvas.value.width, outputCanvas.value.height) * 0.60 : Math.min(outputCanvas.value.width, outputCanvas.value.height) * 0.65;
+  const maxFaceSize = isMobile ? Math.min(outputCanvas.value.width, outputCanvas.value.height) * 0.50 : Math.min(outputCanvas.value.width, outputCanvas.value.height) * 0.65;
 
   if (faceWidth < minFaceSize || faceHeight < minFaceSize) {
     message.value = "Acércate más a la cámara.";

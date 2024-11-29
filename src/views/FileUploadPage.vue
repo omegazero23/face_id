@@ -3,7 +3,8 @@
     <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-6 relative">
       <!-- Loading Overlay -->
       <transition name="fade">
-        <div v-if="isLoading" class="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center rounded-lg z-10">
+        <div v-if="isLoading"
+          class="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center rounded-lg z-10">
           <div class="text-center">
             <div class="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-black mb-4"></div>
             <p class="text-gray-700 font-semibold">Procesando...</p>
@@ -13,22 +14,15 @@
 
       <!-- Botón Regresar -->
       <transition name="fade">
-        <button 
-          v-if="currentView !== 'main'"
-          @click="goBack" 
-          class="mb-4 flex items-center text-gray-600 hover:text-gray-800 transition-colors duration-200"
-        >
+        <button v-if="currentView !== 'main'" @click="goBack"
+          class="mb-4 flex items-center text-gray-600 hover:text-gray-800 transition-colors duration-200">
           <ArrowLeftIcon class="h-5 w-5 mr-1" />
           Regresar
         </button>
       </transition>
 
       <!-- Logo -->
-      <img 
-        src="@/assets/logo_trans.png" 
-        alt="SoftCrédito Logo" 
-        class="w-64 mx-auto mb-6"
-      />
+      <img src="@/assets/logo_trans.png" alt="SoftCrédito Logo" class="w-64 mx-auto mb-6" />
 
       <h2 class="text-2xl font-bold text-center mb-6">
         {{ currentView === 'main' ? 'Subir INE o Pasaporte' : currentView === 'ine' ? 'Subir INE' : 'Subir Pasaporte' }}
@@ -37,16 +31,12 @@
       <!-- Vista Principal -->
       <transition name="fade" mode="out-in">
         <div v-if="currentView === 'main'" class="space-y-4">
-          <button
-            @click="currentView = 'ine'"
-            class="w-full bg-black text-white rounded-md py-3 px-4 hover:bg-gray-800 transition-colors duration-200"
-          >
+          <button @click="currentView = 'ine'"
+            class="w-full bg-black text-white rounded-md py-3 px-4 hover:bg-gray-800 transition-colors duration-200">
             Subir INE
           </button>
-          <button
-            @click="currentView = 'passport'"
-            class="w-full bg-black text-white rounded-md py-3 px-4 hover:bg-gray-800 transition-colors duration-200"
-          >
+          <button @click="currentView = 'passport'"
+            class="w-full bg-black text-white rounded-md py-3 px-4 hover:bg-gray-800 transition-colors duration-200">
             Subir Pasaporte
           </button>
         </div>
@@ -56,18 +46,11 @@
           <!-- INE Frente -->
           <div>
             <h3 class="text-lg font-medium mb-2">INE Frente</h3>
-            <div 
+            <div
               class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center cursor-pointer hover:border-gray-400 transition-colors duration-200"
-              @click="triggerFileInput('ineFront')"
-            >
-              <input
-                type="file"
-                ref="ineFrontInput"
-                class="hidden"
-                @change="handleFileSelect('ineFront', $event)"
-                accept="image/*"
-                capture="environment"
-              />
+              @click="triggerFileInput('ineFront')">
+              <input type="file" ref="ineFrontInput" class="hidden" @change="handleFileSelect('ineFront', $event)"
+                accept="image/*" capture="environment" />
               <UploadIcon v-if="!ineFrontFile" class="h-8 w-8 mx-auto mb-2 text-gray-400" />
               <img v-else :src="ineFrontPreview" alt="INE Frente Preview" class="max-h-40 mx-auto mb-2" />
               <p class="text-gray-500">
@@ -79,18 +62,11 @@
           <!-- INE Reverso -->
           <div>
             <h3 class="text-lg font-medium mb-2">INE Reverso</h3>
-            <div 
+            <div
               class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center cursor-pointer hover:border-gray-400 transition-colors duration-200"
-              @click="triggerFileInput('ineBack')"
-            >
-              <input
-                type="file"
-                ref="ineBackInput"
-                class="hidden"
-                @change="handleFileSelect('ineBack', $event)"
-                accept="image/*"
-                capture="environment"
-              />
+              @click="triggerFileInput('ineBack')">
+              <input type="file" ref="ineBackInput" class="hidden" @change="handleFileSelect('ineBack', $event)"
+                accept="image/*" capture="environment" />
               <UploadIcon v-if="!ineBackFile" class="h-8 w-8 mx-auto mb-2 text-gray-400" />
               <img v-else :src="ineBackPreview" alt="INE Reverso Preview" class="max-h-40 mx-auto mb-2" />
               <p class="text-gray-500">
@@ -100,11 +76,9 @@
           </div>
 
           <!-- Botón Subir INE -->
-          <button
-            @click="uploadINE"
+          <button @click="uploadINE"
             class="w-full bg-black text-white rounded-md py-3 px-4 hover:bg-gray-800 transition-colors duration-200 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
-            :disabled="!ineFrontFile || !ineBackFile || isLoading"
-          >
+            :disabled="!ineFrontFile || !ineBackFile || isLoading">
             <UploadIcon class="h-5 w-5 mr-2" />
             Subir INE (Frente y Reverso)
           </button>
@@ -115,18 +89,11 @@
           <!-- Pasaporte -->
           <div>
             <h3 class="text-lg font-medium mb-2">Pasaporte</h3>
-            <div 
+            <div
               class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center cursor-pointer hover:border-gray-400 transition-colors duration-200"
-              @click="triggerFileInput('passport')"
-            >
-              <input
-                type="file"
-                ref="passportInput"
-                class="hidden"
-                @change="handleFileSelect('passport', $event)"
-                accept="image/*"
-                capture="environment"
-              />
+              @click="triggerFileInput('passport')">
+              <input type="file" ref="passportInput" class="hidden" @change="handleFileSelect('passport', $event)"
+                accept="image/*" capture="environment" />
               <UploadIcon v-if="!passportFile" class="h-8 w-8 mx-auto mb-2 text-gray-400" />
               <img v-else :src="passportPreview" alt="Pasaporte Preview" class="max-h-40 mx-auto mb-2" />
               <p class="text-gray-500">
@@ -136,11 +103,9 @@
           </div>
 
           <!-- Botón Subir Pasaporte -->
-          <button
-            @click="uploadPassport"
+          <button @click="uploadPassport"
             class="w-full bg-black text-white rounded-md py-3 px-4 hover:bg-gray-800 transition-colors duration-200 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
-            :disabled="!passportFile || isLoading"
-          >
+            :disabled="!passportFile || isLoading">
             <UploadIcon class="h-5 w-5 mr-2" />
             Subir Pasaporte
           </button>
@@ -149,7 +114,8 @@
 
       <!-- Error Message -->
       <transition name="fade">
-        <div v-if="errorMessage" class="mt-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded relative" role="alert">
+        <div v-if="errorMessage" class="mt-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded relative"
+          role="alert">
           <strong class="font-bold">Error:</strong>
           <span class="block sm:inline">{{ errorMessage }}</span>
         </div>
@@ -158,51 +124,41 @@
 
     <!-- Modal de recorte -->
     <transition name="fade">
-  <div v-if="showCropper.ineFront || showCropper.ineBack || showCropper.passport" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-    <div class="bg-white p-6 rounded-lg shadow-xl w-11/12 max-w-2xl">
-      <h3 class="text-lg font-bold mb-4">Recortar imagen</h3>
-      <Cropper
-        v-if="currentCropImage"
-        class="h-96 mb-4"
-        :src="currentCropImage"
-        @change="cropImage"
-        :stencil-props="{
-          aspectRatio: 1.6
-        }"
-        :default-size="{
+      <div v-if="showCropper.ineFront || showCropper.ineBack || showCropper.passport"
+        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white p-6 rounded-lg shadow-xl w-11/12 max-w-2xl">
+          <h3 class="text-lg font-bold mb-4">Recortar imagen</h3>
+          <Cropper v-if="currentCropImage" class="h-96 mb-4" :src="currentCropImage" @change="cropImage" :stencil-props="{
+            aspectRatio: 1.6
+          }" :default-size="{
           width: 400,
           height: 250
-        }"
-        :resize-image="{
+        }" :resize-image="{
           touch: true,
           wheel: true,
           zoom: true
-        }"
-        :transitions="true"
-        :canvas="{
+        }" :transitions="true" :canvas="{
           width: 1000,
           height: 1000
-        }"
-        :image-restriction="'stencil'"
-        ref="cropperRef"
-      />
-      <div class="flex justify-between items-center mb-4">
-        <button @click="rotateImage" class="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300">
-          <RotateCwIcon class="h-5 w-5" />
-          Rotar
-        </button>
-        <div>
-          <button @click="cancelCropping" class="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 mr-2">
-            Cancelar
-          </button>
-          <button @click="finishCropping" class="px-4 py-2 bg-black text-white rounded hover:bg-gray-800">
-            Finalizar recorte
-          </button>
+        }" :image-restriction="'stencil'" ref="cropperRef" />
+          <div class="flex justify-between items-center mb-4">
+            <button @click="rotateImage" class="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300">
+              <RotateCwIcon class="h-5 w-5" />
+              Rotar
+            </button>
+            <div>
+              <button @click="cancelCropping"
+                class="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 mr-2">
+                Cancelar
+              </button>
+              <button @click="finishCropping" class="px-4 py-2 bg-black text-white rounded hover:bg-gray-800">
+                Finalizar recorte
+              </button>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
-  </div>
-</transition>
+    </transition>
   </div>
 </template>
 
@@ -338,28 +294,78 @@ const triggerFileInput = (type) => {
   else if (type === 'ineBack') ineBackInput.value.click()
   else if (type === 'passport') passportInput.value.click()
 }
-
 const handleFileSelect = (type, event) => {
   const file = event.target.files[0]
   if (file) {
+    // Validar tamaño del archivo
+    const maxSizeInBytes = 3 * 1024 * 1024 // 5MB
+    if (file.size > maxSizeInBytes) {
+      alert('El archivo es demasiado grande. Máximo 3MB.')
+      return
+    }
+
+    // Comprimir imagen antes de cargarla
     const reader = new FileReader()
     reader.onload = (e) => {
-      if (type === 'ineFront') {
-        ineFrontFile.value = file
-        ineFrontPreview.value = e.target.result
-        showCropper.ineFront = true
-      } else if (type === 'ineBack') {
-        ineBackFile.value = file
-        ineBackPreview.value = e.target.result
-        showCropper.ineBack = true
-      } else if (type === 'passport') {
-        passportFile.value = file
-        passportPreview.value = e.target.result
-        showCropper.passport = true
+      // Crear imagen temporal para compresión
+      const img = new Image()
+      img.onload = () => {
+        const canvas = document.createElement('canvas')
+        const ctx = canvas.getContext('2d')
+
+        // Redimensionar imagen si es muy grande
+        const MAX_WIDTH = 1024
+        const MAX_HEIGHT = 1024
+        let width = img.width
+        let height = img.height
+
+        if (width > height) {
+          if (width > MAX_WIDTH) {
+            height *= MAX_WIDTH / width
+            width = MAX_WIDTH
+          }
+        } else {
+          if (height > MAX_HEIGHT) {
+            width *= MAX_HEIGHT / height
+            height = MAX_HEIGHT
+          }
+        }
+
+        canvas.width = width
+        canvas.height = height
+
+        // Dibujar imagen comprimida
+        ctx.drawImage(img, 0, 0, width, height)
+
+        // Convertir a base64 con calidad reducida
+        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7)
+
+        // Actualizar según el tipo de archivo
+        switch (type) {
+          case 'ineFront':
+            ineFrontFile.value = file
+            ineFrontPreview.value = compressedDataUrl
+            showCropper.ineFront = true
+            break
+          case 'ineBack':
+            ineBackFile.value = file
+            ineBackPreview.value = compressedDataUrl
+            showCropper.ineBack = true
+            break
+          case 'passport':
+            passportFile.value = file
+            passportPreview.value = compressedDataUrl
+            showCropper.passport = true
+            break
+        }
+
+        currentCropType.value = type
+        rotation.value = 0
       }
-      currentCropType.value = type
-      rotation.value = 0
+
+      img.src = e.target.result
     }
+
     reader.readAsDataURL(file)
   }
 }

@@ -46,12 +46,13 @@ const routes = [
     path: '/success',
     name: 'SuccessProcess',
     component: SuccessProcess,
-    
+    meta: { requiresAuth: true }
   },
   {
     path: '/outstanding',
     name: 'Outstanding',
-    component: PendingApproval
+    component: PendingApproval,
+    meta: { requiresAuth: true }
   },
   {
     path: '/:pathMatch(.*)*',
