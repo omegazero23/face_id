@@ -298,9 +298,9 @@ const handleFileSelect = (type, event) => {
   const file = event.target.files[0]
   if (file) {
     // Validar tamaño del archivo
-    const maxSizeInBytes = 3 * 1024 * 1024 // 5MB
+    const maxSizeInBytes = 5 * 1024 * 1024 // 5MB
     if (file.size > maxSizeInBytes) {
-      alert('El archivo es demasiado grande. Máximo 3MB.')
+      alert('El archivo es demasiado grande. Máximo 5MB.')
       return
     }
 

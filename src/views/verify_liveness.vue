@@ -510,7 +510,6 @@ function stopRecording() {
   max-width: 100%; /* Evita que el contenedor exceda el ancho de la ventana */
   box-sizing: border-box; /* Incluye padding en el cálculo del ancho */
   margin: 0; /* Elimina cualquier margen */
-
 }
 
 .content-wrapper {
