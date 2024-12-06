@@ -131,9 +131,9 @@
           <Cropper v-if="currentCropImage" class="h-96 mb-4" :src="currentCropImage" @change="cropImage" :stencil-props="{
             aspectRatio: 1.6
           }" :default-size="{
-          width: 400,
-          height: 250
-        }" :resize-image="{
+            width: 400,
+            height: 250
+          }" :resize-image="{
           touch: true,
           wheel: true,
           zoom: true
@@ -298,7 +298,7 @@ const handleFileSelect = (type, event) => {
   const file = event.target.files[0]
   if (file) {
     // Validar tamaño del archivo
-    const maxSizeInBytes = 5 * 1024 * 1024 // 5MB
+    const maxSizeInBytes = 10 * 1024 * 1024 // 5MB
     if (file.size > maxSizeInBytes) {
       alert('El archivo es demasiado grande. Máximo 5MB.')
       return
@@ -338,7 +338,7 @@ const handleFileSelect = (type, event) => {
         ctx.drawImage(img, 0, 0, width, height)
 
         // Convertir a base64 con calidad reducida
-        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7)
+        const compressedDataUrl = canvas.toDataURL('image/jpeg', 1)
 
         // Actualizar según el tipo de archivo
         switch (type) {
@@ -457,8 +457,11 @@ const uploadINE = async () => {
       },
     })
 
-    if (!response.ok) {
-      throw new Error('Error al subir los archivos de INE')
+    if (response.status === 400) {
+      throw new Error('Las imágenes no son aptas o fallo la lista nominal');
+    }
+    if (response.status === 500) {
+      throw new Error('El servicio no está disponible');
     }
 
     const result = await response.json()
@@ -497,8 +500,11 @@ const uploadPassport = async () => {
       },
     })
 
-    if (!response.ok) {
-      throw new Error('Error al subir el archivo de Pasaporte')
+    if (response.status === 400) {
+      throw new Error('La imágen no es apta');
+    }
+    if (response.status === 500) {
+      throw new Error('El servicio no está disponible');
     }
 
     const result = await response.json()

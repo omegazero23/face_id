@@ -176,9 +176,10 @@ function onResults(results) {
 
   canvasCtx.fillStyle = 'rgba(0, 0, 0, 0.75)';
   canvasCtx.fillRect(0, 0, outputCanvas.value.width, outputCanvas.value.height);
+  const scaleFactor = 0.8; // Factor de escala para reducir el tamaño del óvalo
 
-  const ovalWidth = outputCanvas.value.width * 0.4;
-  const ovalHeight = outputCanvas.value.height * 0.7;
+  const ovalWidth = outputCanvas.value.width * 0.4 * scaleFactor;
+  const ovalHeight = outputCanvas.value.height * 0.7 * scaleFactor;
   const centerX = outputCanvas.value.width / 2;
   const centerY = outputCanvas.value.height / 2;
 
@@ -233,8 +234,8 @@ function onResults(results) {
   const faceHeight = Math.abs(pixelLandmarks[10].y - pixelLandmarks[152].y);
 
   const isMobile = window.innerWidth < 768;
-  const minFaceSize = isMobile ? Math.min(outputCanvas.value.width, outputCanvas.value.height) * 0.30 : Math.min(outputCanvas.value.width, outputCanvas.value.height) * 0.45;
-  const maxFaceSize = isMobile ? Math.min(outputCanvas.value.width, outputCanvas.value.height) * 0.50 : Math.min(outputCanvas.value.width, outputCanvas.value.height) * 0.65;
+  const minFaceSize = isMobile ? Math.min(outputCanvas.value.width, outputCanvas.value.height) * 0.30 : Math.min(outputCanvas.value.width, outputCanvas.value.height) * 0.30;
+  const maxFaceSize = isMobile ? Math.min(outputCanvas.value.width, outputCanvas.value.height) * 0.45 : Math.min(outputCanvas.value.width, outputCanvas.value.height) * 0.45;
 
   if (faceWidth < minFaceSize || faceHeight < minFaceSize) {
     message.value = "Acércate más a la cámara.";
@@ -379,7 +380,7 @@ async function captureImage() {
             },
           });
           const data = await response.json();
-          if (response.status >= 400) {
+          if (response.status != 200) {
             Swal.fire({
               title: 'Error',
               text: 'Vuelve a tomar la imagen siguiendo las indicaciones.',
