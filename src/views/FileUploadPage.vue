@@ -142,9 +142,10 @@
           height: 1000
         }" :image-restriction="'stencil'" ref="cropperRef" />
           <div class="flex justify-between items-center mb-4">
-            <button @click="rotateImage" class="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300">
-              <RotateCwIcon class="h-5 w-5" />
-              Rotar
+            <button @click="rotateImage" class="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 flex items-center">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="mr-2">
+                <path d="M11.9231 19C10.4611 19 9.03659 18.532 7.85379 17.6631C6.671 16.7942 5.79063 15.569 5.33884 14.1631C4.88705 12.7572 4.88705 11.2428 5.33884 9.83688C5.79063 8.43098 6.671 7.20578 7.8538 6.33688C9.03659 5.46798 10.4611 5 11.9231 5C13.3851 5 14.8096 5.46799 15.9924 6.33688C17.1752 7.20578 18.0555 8.43098 18.5073 9.83688C18.9591 11.2428 18.9591 12.7572 18.5073 14.1631M17.5 12.7778L18.4615 14.3333L20 13.1667" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+              </svg>
             </button>
             <div>
               <button @click="cancelCropping"
@@ -164,7 +165,7 @@
 
 <script setup>
 import { ref, onMounted, reactive, computed } from 'vue'
-import { ArrowLeftIcon, UploadIcon, RotateCwIcon } from 'lucide-vue-next'
+import { ArrowLeftIcon, UploadIcon } from 'lucide-vue-next'
 import { useRouter } from 'vue-router'
 import Cookies from 'js-cookie'
 import Swal from 'sweetalert2'

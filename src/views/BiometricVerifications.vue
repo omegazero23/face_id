@@ -170,7 +170,10 @@ function onResults(results) {
   canvasCtx.save();
   canvasCtx.clearRect(0, 0, outputCanvas.value.width, outputCanvas.value.height);
 
-  canvasCtx.drawImage(results.image, 0, 0, outputCanvas.value.width, outputCanvas.value.height);
+  // Draw the mirrored video feed
+  canvasCtx.scale(-1, 1);
+  canvasCtx.drawImage(results.image, -outputCanvas.value.width, 0, outputCanvas.value.width, outputCanvas.value.height);
+  canvasCtx.scale(-1, 1); // Reset the scale
 
   lastImageData.value = canvasCtx.getImageData(0, 0, outputCanvas.value.width, outputCanvas.value.height);
 
@@ -187,7 +190,10 @@ function onResults(results) {
   canvasCtx.ellipse(centerX, centerY, ovalWidth / 2, ovalHeight / 2, 0, 0, 2 * Math.PI);
   canvasCtx.clip();
 
-  canvasCtx.drawImage(results.image, 0, 0, outputCanvas.value.width, outputCanvas.value.height);
+  // Draw the mirrored video feed inside the oval
+  canvasCtx.scale(-1, 1);
+  canvasCtx.drawImage(results.image, -outputCanvas.value.width, 0, outputCanvas.value.width, outputCanvas.value.height);
+  canvasCtx.scale(-1, 1); // Reset the scale
 
   canvasCtx.restore();
 
@@ -199,17 +205,24 @@ function onResults(results) {
 
   if (results.multiFaceLandmarks) {
     for (const landmarks of results.multiFaceLandmarks) {
-      drawConnectors(canvasCtx, landmarks, FACEMESH_TESSELATION, { color: '#C0C0C070', lineWidth: 0.5 });
-      drawConnectors(canvasCtx, landmarks, FACEMESH_RIGHT_EYE, { color: '#FFFFFF', lineWidth: 0.5 });
-      drawConnectors(canvasCtx, landmarks, FACEMESH_RIGHT_EYEBROW, { color: '#FFFFFF', lineWidth: 0.5 });
-      drawConnectors(canvasCtx, landmarks, FACEMESH_RIGHT_IRIS, { color: '#FFFFFF', lineWidth: 0.5 });
-      drawConnectors(canvasCtx, landmarks, FACEMESH_LEFT_EYE, { color: '#FFFFFF', lineWidth: 0.5 });
-      drawConnectors(canvasCtx, landmarks, FACEMESH_LEFT_EYEBROW, { color: '#FFFFFF', lineWidth: 0.5 });
-      drawConnectors(canvasCtx, landmarks, FACEMESH_LEFT_IRIS, { color: '#FFFFFF', lineWidth: 0.5 });
-      drawConnectors(canvasCtx, landmarks, FACEMESH_FACE_OVAL, { color: '#E0E0E0', lineWidth: 0.5 });
-      drawConnectors(canvasCtx, landmarks, FACEMESH_LIPS, { color: '#E0E0E0', lineWidth: 0.5 });
+      // Adjust x-coordinates for the face mesh drawing
+      const adjustedLandmarks = landmarks.map(landmark => ({
+        ...landmark,
+        x: 1 - landmark.x // Invert the x-coordinate
+      }));
 
-      criteriaMet.value = validateFacePositionAndQuality(landmarks);
+      // Draw the face mesh with adjusted coordinates
+      drawConnectors(canvasCtx, adjustedLandmarks, FACEMESH_TESSELATION, { color: '#C0C0C070', lineWidth: 0.5 });
+      drawConnectors(canvasCtx, adjustedLandmarks, FACEMESH_RIGHT_EYE, { color: '#FFFFFF', lineWidth: 0.5 });
+      drawConnectors(canvasCtx, adjustedLandmarks, FACEMESH_RIGHT_EYEBROW, { color: '#FFFFFF', lineWidth: 0.5 });
+      drawConnectors(canvasCtx, adjustedLandmarks, FACEMESH_RIGHT_IRIS, { color: '#FFFFFF', lineWidth: 0.5 });
+      drawConnectors(canvasCtx, adjustedLandmarks, FACEMESH_LEFT_EYE, { color: '#FFFFFF', lineWidth: 0.5 });
+      drawConnectors(canvasCtx, adjustedLandmarks, FACEMESH_LEFT_EYEBROW, { color: '#FFFFFF', lineWidth: 0.5 });
+      drawConnectors(canvasCtx, adjustedLandmarks, FACEMESH_LEFT_IRIS, { color: '#FFFFFF', lineWidth: 0.5 });
+      drawConnectors(canvasCtx, adjustedLandmarks, FACEMESH_FACE_OVAL, { color: '#E0E0E0', lineWidth: 0.5 });
+      drawConnectors(canvasCtx, adjustedLandmarks, FACEMESH_LIPS, { color: '#E0E0E0', lineWidth: 0.5 });
+
+      criteriaMet.value = validateFacePositionAndQuality(adjustedLandmarks);
     }
   } else {
     message.value = "No se detectó ningún rostro. Ajusta tu posición.";
@@ -332,7 +345,7 @@ function checkBrightness(canvasElement, landmarks) {
   const averageBrightness = totalBrightness / pixelCount;
 
   const minBrightness = 40;
-  const maxBrightness = 220;
+  const maxBrightness = 200;
 
   return {
     brightness: averageBrightness,
@@ -360,7 +373,9 @@ async function captureImage() {
       tempCanvas.height = videoElement.videoHeight;
       const tempCtx = tempCanvas.getContext('2d');
       tempCtx.drawImage(videoElement, 0, 0, tempCanvas.width, tempCanvas.height);
-
+      // invertir imagen para mandarla al backend
+      tempCtx.scale(-1, 1);
+      tempCtx.drawImage(videoElement, -tempCanvas.width, 0, tempCanvas.width, tempCanvas.height);
       // Convertir el canvas a un blob
       tempCanvas.toBlob(async (blob) => {
         const formData = new FormData();
@@ -449,15 +464,15 @@ async function captureImage() {
 }
 
 .output-canvas {
-  transform: scaleX(-1);
+  /* transform: scaleX(-1); */
   border-radius: 10px;
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
 }
 
-.output-canvas:hover {
+/* .output-canvas:hover {
   transform: scaleX(-1) scale(1.02);
-}
+} */
 
 .video-container {
   display: flex;
